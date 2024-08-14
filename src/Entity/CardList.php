@@ -16,6 +16,10 @@ class CardList
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\ManyToOne(inversedBy: 'AddTo')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Deck $addTo = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -29,6 +33,18 @@ class CardList
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getAddTo(): ?Deck
+    {
+        return $this->addTo;
+    }
+
+    public function setAddTo(?Deck $addTo): static
+    {
+        $this->addTo = $addTo;
 
         return $this;
     }
