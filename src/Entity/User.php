@@ -6,9 +6,16 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+// #[UniqueEntity(fields: ['password'], message: 'There is already an account with this password')]
+#[UniqueEntity(fields: ['name'], message: 'There is already an account with this name')]
+class User implements PasswordAuthenticatedUserInterface, UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -26,6 +33,9 @@ class User
      */
     #[ORM\OneToMany(targetEntity: Deck::class, mappedBy: 'Creator')]
     private Collection $decks;
+
+    #[ORM\Column(length: 255)]
+    private ?string $mail = null;
 
     public function __construct()
     {
@@ -87,6 +97,58 @@ class User
                 $deck->setCreator(null);
             }
         }
+
+        return $this;
+    }
+
+
+    // conection
+
+     /**
+     * Returns the roles granted to the user.
+     *
+     *     public function getRoles()
+     *     {
+     *         return ['ROLE_USER'];
+     *     }
+     *
+     * Alternatively, the roles might be stored in a ``roles`` property,
+     * and populated in any number of different ways when the user object
+     * is created.
+     *
+     * @return string[]
+     */
+    public function getRoles(): array {
+        return [];
+    }
+
+    /**
+     * Removes sensitive data from the user.
+     *
+     * This is important if, at any given point, sensitive information like
+     * the plain-text password is stored on this object.
+     *
+     * @return void
+     */
+    public function eraseCredentials(){
+        
+    }
+
+    /**
+     * Returns the identifier for this user (e.g. username or email address).
+     */
+    public function getUserIdentifier(): string{
+        return $this->getName();
+    }
+
+    public function getMail(): ?string
+    {
+        return $this->mail;
+    }
+
+    public function setMail(string $mail): static
+    {
+        $this->mail = $mail;
 
         return $this;
     }

@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Deck{% endblock %}
+
+{% block body %}
+    <h1>Edit Deck</h1>
+
+    {{ include('deck/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_deck_index') }}">back to list</a>
+
+    {{ include('deck/_delete_form.html.twig') }}
+{% endblock %}

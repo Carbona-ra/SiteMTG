@@ -23,6 +23,7 @@ class AppFixtures extends Fixture
         foreach (self::USERS_NAMES as $UserName) {
             $user = new User();
             $user->setName($UserName);
+            $user->setMail($faker->email());
             $user->setPassword($faker->password());
             $userlist[] = $user;
             $manager->persist($user);
