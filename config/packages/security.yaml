@@ -8,7 +8,9 @@ security:
         app_user_provider:
             entity:
                 class: App\Entity\User  # Remplacez par la classe de votre entité User
-                property: email  # ou 'username' selon votre configuration
+                property: name  # ou 'username' selon votre configuration
+
+    enable_authenticator_manager: true
 
     firewalls:
         dev:

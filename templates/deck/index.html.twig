@@ -1,39 +1,63 @@
+{# deck/index.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Deck index{% endblock %}
+{% block title %}Decks{% endblock %}
 
 {% block body %}
-    <h1>Deck index</h1>
+<div class="max-w-4xl mx-auto p-6 text-gray-100 rounded-lg">
+    {% if app.user %}
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold border-b-2 text-black border-red-600 pb-2">Your Decks</h2>
+            <a href="{{ path('app_deck_new') }}" class="text-green-500 hover:text-green-300">Add New Deck</a>
+        </div>
+        <ul class="space-y-3">
+            {% for deck in user_decks %}
+                <li class="p-4 bg-gray-800 rounded-lg">
+                    {% if deck.imageName %}
+                        <img src="{{ asset('uploads/deck_images/' ~ deck.imageName) }}" alt="{{ deck.name }}" class="w-full h-48 object-cover rounded-t-lg mb-4">
+                    {% endif %}
+                    <div class="flex justify-between items-center">
+                        <a href="{{ path('app_deck_show', {'id': deck.id}) }}" class="text-xl font-medium text-gray-100 hover:text-red-400">{{ deck.name }}</a>
+                        <div class="flex space-x-2">
+                            <a href="{{ path('app_deck_edit', {'id': deck.id}) }}" class="text-blue-500 hover:text-blue-300">Edit</a>
+                            <form method="post" action="{{ path('app_deck_delete', {'id': deck.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ deck.id) }}">
+                                <button class="text-red-500 hover:text-red-300" onclick="return confirm('Are you sure?');">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>ImageName</th>
-                <th>CommanderName</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for deck in decks %}
-            <tr>
-                <td>{{ deck.id }}</td>
-                <td>{{ deck.name }}</td>
-                <td>{{ deck.imageName }}</td>
-                <td>{{ deck.commanderName }}</td>
-                <td>
-                    <a href="{{ path('app_deck_show', {'id': deck.id}) }}">show</a>
-                    <a href="{{ path('app_deck_edit', {'id': deck.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <h2 class="text-2xl font-semibold border-b-2 text-black border-red-600 mb-4 pb-2">All Decks</h2>
 
-    <a href="{{ path('app_deck_new') }}">Create new</a>
+    {% for creatorId, group in grouped_decks %}
+        <h3 class="text-xl font-semibold border-b-2 text-black border-red-600 mb-4 pb-2">{{ group.creator.name }}</h3>
+        <ul class="space-y-3">
+            {% for deck in group.decks %}
+                <li class="p-4 bg-gray-800 rounded-lg">
+                    {% if deck.imageName %}
+                        <img src="{{ asset('uploads/deck_images/' ~ deck.imageName) }}" alt="{{ deck.name }}" class="w-full h-48 object-cover rounded-t-lg mb-4">
+                    {% endif %}
+                    <div class="flex justify-between items-center">
+                        <a href="{{ path('app_deck_show', {'id': deck.id}) }}" class="text-xl font-medium text-gray-100 hover:text-red-400">{{ deck.name }}</a>
+                        {% if deck.creator == app.user %}
+                            <div class="flex space-x-2">
+                                <a href="{{ path('app_deck_edit', {'id': deck.id}) }}" class="text-blue-500 hover:text-blue-300">Edit</a>
+                                <form method="post" action="{{ path('app_deck_delete', {'id': deck.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ deck.id) }}">
+                                    <button class="text-red-500 hover:text-red-300" onclick="return confirm('Are you sure?');">Delete</button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <a href="{{ path('app_deck_show', {'id': deck.id}) }}" class="text-green-500 hover:text-green-300">View</a>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+</div>
 {% endblock %}
