@@ -94,8 +94,14 @@ class DeckController extends AbstractController
     #[Route('/{id}', name: 'app_deck_show', methods: ['GET'])]
     public function show(Deck $deck): Response
     {
+
+        $user = $this->getUser();
+        $isOwner = ($deck->getCreator() === $user); // savoir si c'est le proprio du deck
+        
         return $this->render('deck/show.html.twig', [
             'deck' => $deck,
+            'cards' => $deck->getAddTo(),  //ici on chope la liste de carte du deck
+            'isOwner' => $isOwner,
         ]);
     }
 
