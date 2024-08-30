@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\Deck;
 use App\Form\DeckType;
 use App\Repository\DeckRepository;
+use App\Service\Mtgservice;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -17,9 +18,18 @@ use Symfony\Component\Filesystem\Filesystem;
 #[Route('/deck')]
 class DeckController extends AbstractController
 {
+
+    private $mtgService;
+
+    public function __construct(Mtgservice $mtgService)
+    {
+        $this->mtgService = $mtgService;
+    }
+
     #[Route('/', name: 'app_deck_index', methods: ['GET'])]
         public function index(DeckRepository $deckRepository, Security $security): Response
     {
+        
         $user = $security->getUser();
         
         // Récupérer les decks de l'utilisateur connecté
@@ -61,6 +71,8 @@ class DeckController extends AbstractController
         ]);
     }
 
+
+
     #[Route('/new', name: 'app_deck_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
@@ -68,55 +80,83 @@ class DeckController extends AbstractController
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
-
+        
+    
         $deck = new Deck();
         $deck->setCreator($user);
         $form = $this->createForm(DeckType::class, $deck);
         $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $imageFile = $form->get('imageFile')->getData();
-
-            if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
-
-                try {
-                    $imageFile->move(
-                        $this->getParameter('deck_images_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // Handle the exception if something happens during file upload
+    
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $imageFile = $form->get('imageFile')->getData();
+    
+                if ($imageFile) {
+                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFilename = $slugger->slug($originalFilename);
+                    $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+    
+                    try {
+                        $imageFile->move(
+                            $this->getParameter('deck_images_directory'),
+                            $newFilename
+                        );
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'There was a problem uploading the file.');
+                    }
+    
+                    $deck->setImageName($newFilename);
                 }
-
-                $deck->setImageName($newFilename);
+    
+                $entityManager->persist($deck);
+                $entityManager->flush();
+    
+                return $this->redirectToRoute('app_deck_index', [], Response::HTTP_SEE_OTHER);
+            } else {
+                // Collecter les erreurs de validation
+                $errors = [];
+                foreach ($form->getErrors(true) as $error) {
+                    $errors[] = $error->getMessage();
+                }
+                // Ajouter un message flash avec les erreurs
+                $this->addFlash('error', implode(', ', $errors));
             }
-
-            $entityManager->persist($deck);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_deck_index', [], Response::HTTP_SEE_OTHER);
         }
-
+    
         return $this->render('deck/new.html.twig', [
             'deck' => $deck,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
+
+    
 
     #[Route('/{id}', name: 'app_deck_show', methods: ['GET'])]
     public function show(Deck $deck): Response
     {
-
         $user = $this->getUser();
         $isOwner = ($deck->getCreator() === $user); // savoir si c'est le proprio du deck
-        
+
+        // Récupérer le nom du commander du deck
+        $commanderName = $deck->getCommanderName();
+
+        // Utiliser le service MtgService pour récupérer l'image du commander
+        $commanderImage = $this->mtgService->getCardImage($commanderName);
+
+        // Récupérer les images des cartes du deck
+        $cards = $deck->getAddTo(); 
+        $cardImages = [];
+        foreach ($cards as $card) {
+            $cardName = $card->getName();
+            $cardImages[$cardName] = $this->mtgService->getCardImage($cardName);
+        }
+
         return $this->render('deck/show.html.twig', [
             'deck' => $deck,
-            'cards' => $deck->getAddTo(),  //ici on chope la liste de carte du deck
+            'cards' => $deck->getAddTo(), 
             'isOwner' => $isOwner,
+            'cardImages' => $cardImages,
+            'commanderImage' => $commanderImage, 
         ]);
     }
 

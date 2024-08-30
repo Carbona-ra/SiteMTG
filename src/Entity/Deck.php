@@ -18,7 +18,7 @@ class Deck
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageName = null;
 
     #[ORM\Column(length: 255)]
@@ -33,9 +33,15 @@ class Deck
     #[ORM\ManyToOne(inversedBy: 'decks')]
     private ?User $Creator = null;
 
+
     public function __construct()
     {
         $this->AddTo = new ArrayCollection();
+    }
+    
+    public function __toString()
+    {
+      return $this->name;
     }
 
     public function getId(): ?int
@@ -66,6 +72,8 @@ class Deck
 
         return $this;
     }
+
+    
 
     public function getCommanderName(): ?string
     {
@@ -120,4 +128,6 @@ class Deck
 
         return $this;
     }
+
+    
 }

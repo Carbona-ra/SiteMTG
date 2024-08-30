@@ -3,7 +3,7 @@
 {% block title %}Deck{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-gray-900 text-white">
+<div class="min-h-screen dark:bg-neutral-800 text-white">
     <div class="container mx-auto py-8 px-4">
         <h1 class="text-4xl font-bold text-red-500 mb-8">Deck</h1>
 
@@ -11,12 +11,16 @@
             <!-- Commander Section -->
             <div class="w-1/4">
                 <div class="bg-gray-800 rounded-lg p-4 shadow-lg">
-                    <h2 class="text-2xl font-bold mb-4">Commander</h2>
+                    <h2 class="text-2xl font-bold mb-4">{{ deck.commanderName }}</h2>
                     <div class="aspect-w-3 aspect-h-4 bg-gray-700 rounded-lg mb-4 overflow-hidden">
-                        <!-- Image Placeholder -->
-                        <img src="/path/to/commander-image.jpg" alt="{{ deck.commanderName }}" class="object-cover w-full h-full">
+                        {% if commanderImage %}
+                            <img src="{{ commanderImage }}" alt="{{ deck.commanderName }} image" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="flex items-center justify-center h-full">
+                                <span class="text-white text-center">Image not available</span>
+                            </div>
+                        {% endif %}
                     </div>
-                    <h3 class="text-lg font-semibold">{{ deck.commanderName }}</h3>
                 </div>
             </div>
 
@@ -56,12 +60,12 @@
                     </form>
                 {% endif %}
 
-                <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div class="bg-gray-800 rounded-lg p-6 shadow-lg" data-deck-id="{{ deck.id }}">
                     <h2 class="text-2xl font-bold text-red-500 mb-4">Cards</h2>
                     <ul id="card-list" class="space-y-2">
                         {% for card in cards %}
-                            <li class="bg-gray-700 rounded-lg px-4 py-2 flex justify-between items-center">
-                                {{ card.name }}
+                            <li class="relative bg-gray-700 rounded-lg px-4 py-2 flex justify-between items-center group" data-card-id="{{ card.id }}">
+                                <span class="card-name" data-card-image="{{ cardImages[card.name] }}">{{ card.name }}</span>
                                 {% if isOwner %}
                                     <button data-card-id="{{ card.id }}" class="remove-card-btn text-red-500 hover:text-red-700">
                                         Remove
@@ -75,62 +79,135 @@
         </div>
 
         <div class="mt-8">
-            <a href="{{ path('app_deck_index') }}" class="text-red-500 hover:underline">Back to list</a>
+            <a href="{{ path('app_deck_index') }}" class="bg-red-500 text-white rounded-lg px-4 py-2 hover:bg-red-700 transition-colors">Back to list</a>
             {% if isOwner %}
-                <a href="{{ path('app_deck_edit', {'id': deck.id}) }}" class="ml-4 text-red-500 hover:underline">Edit</a>
+                <a href="{{ path('app_deck_edit', {'id': deck.id}) }}" class="bg-red-500 text-white rounded-lg px-4 py-2 hover:bg-red-700 transition-colors">Edit</a>
                 {{ include('deck/_delete_form.html.twig') }}
             {% endif %}
         </div>
     </div>
 </div>
 
+<!-- Image container to follow the mouse -->
+<div id="card-image-hover" class="absolute pointer-events-none hidden">
+    <img id="hovered-card-image" src="" alt="Card image" class="w-60 h-auto object-cover rounded-lg shadow-lg">
+</div>
 {% if isOwner %}
     <script>
-        document.getElementById('add-card-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            fetch('{{ path('app_card_add') }}', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const cardList = document.getElementById('card-list');
-                    const newCard = document.createElement('li');
-                    newCard.classList.add('bg-gray-700', 'rounded-lg', 'px-4', 'py-2', 'flex', 'justify-between', 'items-center');
-                    newCard.textContent = formData.get('card_name') + ' ';
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = 'Remove';
-                    removeBtn.setAttribute('data-card-id', data.card_id);
-                    removeBtn.classList.add('remove-card-btn', 'text-red-500', 'hover:text-red-700');
-                    newCard.appendChild(removeBtn);
-                    cardList.appendChild(newCard);
+        document.addEventListener('DOMContentLoaded', function() {
+            const cardImageHover = document.getElementById('card-image-hover');
+            const hoveredCardImage = document.getElementById('hovered-card-image');
+            const cardList = document.getElementById('card-list');
+            const addCardForm = document.getElementById('add-card-form');
+
+            // Hover image functionality with event delegation
+            cardList.addEventListener('mouseover', function(event) {
+                const cardNameElement = event.target.closest('.card-name');
+                if (cardNameElement) {
+                    const imageUrl = cardNameElement.dataset.cardImage;
+                    if (imageUrl) {
+                        hoveredCardImage.src = imageUrl;
+                        cardImageHover.classList.remove('hidden');
+                    }
                 }
             });
-        });
 
-        document.querySelectorAll('.remove-card-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const cardId = this.getAttribute('data-card-id');
-                
-                fetch('{{ path('app_card_remove') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ deck_id: {{ deck.id }}, card_id: cardId }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        this.parentElement.remove();
-                    }
+            cardList.addEventListener('mousemove', function(event) {
+                const hoverWidth = cardImageHover.offsetWidth;
+                const hoverHeight = cardImageHover.offsetHeight;
+                const pageWidth = window.innerWidth;
+                const pageHeight = window.innerHeight;
+                let left = event.pageX + 20;
+                let top = event.pageY + 20;
+
+                if (left + hoverWidth > pageWidth) {
+                    left = event.pageX - hoverWidth - 20;
+                }
+
+                if (top + hoverHeight > pageHeight) {
+                    top = event.pageY - hoverHeight - 20;
+                }
+
+                cardImageHover.style.left = `${left}px`;
+                cardImageHover.style.top = `${top}px`;
+            });
+
+            cardList.addEventListener('mouseout', function(event) {
+                const cardNameElement = event.target.closest('.card-name');
+                if (cardNameElement) {
+                    cardImageHover.classList.add('hidden');
+                }
+            });
+
+            // Add card to list
+            if (addCardForm) {
+                addCardForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    
+                    fetch('{{ path('app_card_add') }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const newCard = document.createElement('li');
+                            newCard.classList.add('relative', 'bg-gray-700', 'rounded-lg', 'px-4', 'py-2', 'flex', 'justify-between', 'items-center', 'group');
+                            const cardName = document.createElement('span');
+                            cardName.classList.add('card-name');
+                            cardName.textContent = formData.get('card_name');
+                            cardName.dataset.cardImage = data.card_image_url;
+                            newCard.appendChild(cardName);
+
+                            const removeBtn = document.createElement('button');
+                            removeBtn.textContent = 'Remove';
+                            removeBtn.setAttribute('data-card-id', data.card_id);
+                            removeBtn.classList.add('remove-card-btn', 'text-red-500', 'hover:text-red-700');
+                            newCard.appendChild(removeBtn);
+
+                            cardList.appendChild(newCard);
+
+                            // Afficher l'image de la carte dans l'élément de survol
+                            hoveredCardImage.src = data.card_image_url; // Met à jour l'image de survol
+                        } else {
+                            console.error('Error adding card:', data.error);
+                        }
+                    })
+                    .catch(error => console.error('Fetch error:', error));
                 });
+            }
+
+            // Remove card from list
+            cardList.addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-card-btn')) {
+                    event.preventDefault();
+
+                    const cardId = event.target.getAttribute('data-card-id');
+                    const deleteUrl = `{{ path('app_card_delete', { id: 'PLACEHOLDER' }) }}`.replace('PLACEHOLDER', cardId);
+
+                    fetch(deleteUrl, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'Card deleted') {
+                            event.target.closest('li').remove();
+                        } else {
+                            console.error('Error removing card:', data.error);
+                        }
+                    })
+                    .catch(error => console.error('Fetch error:', error));
+                }
             });
         });
     </script>
 {% endif %}
+
+
 {% endblock %}

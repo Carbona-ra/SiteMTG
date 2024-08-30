@@ -1,14 +1,14 @@
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        App\Entity\User: 'auto'  # Utiliser la classe de votre entité User ici
+        App\Entity\User: 'auto'
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         app_user_provider:
             entity:
-                class: App\Entity\User  # Remplacez par la classe de votre entité User
-                property: name  # ou 'username' selon votre configuration
+                class: App\Entity\User 
+                property: name  
 
     enable_authenticator_manager: true
 
@@ -30,6 +30,8 @@ security:
                 path: app_logout
                 # where to redirect after logout
                 # target: app_any_route
+                # where to redirect after logout
+                # target: app_any_route
 
             # Activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -40,7 +42,7 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:
