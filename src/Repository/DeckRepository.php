@@ -16,6 +16,33 @@ class DeckRepository extends ServiceEntityRepository
         parent::__construct($registry, Deck::class);
     }
 
+
+
+    public function findByCritaire(array $critaire): array
+    {
+        $qb = $this->createQueryBuilder('d');
+
+        if (!empty($critaire['name'])) {
+            $qb->andWhere('d.name LIKE :name')
+               ->setParameter('name', '%'.$critaire['name'].'%');
+        }
+
+        if (!empty($critaire['commanderName'])) {
+            $qb->andWhere('d.commanderName LIKE :commanderName')
+               ->setParameter('commanderName', '%'.$critaire['commanderName'].'%');
+        }
+
+        if (!empty($critaire['Creator'])) {
+            $qb->join('d.Creator', 'c')
+               ->andWhere('c.id = :creatorId')
+               ->setParameter('creatorId', $critaire['Creator']->getId());
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    
+
 //    /**
 //     * @return Deck[] Returns an array of Deck objects
 //     */

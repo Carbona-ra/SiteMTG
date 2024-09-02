@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Deck;
+use App\Form\DeckSearchType;
 use App\Form\DeckType;
 use App\Repository\DeckRepository;
 use App\Service\Mtgservice;
@@ -68,6 +69,27 @@ class DeckController extends AbstractController
         return $this->render('deck/index.html.twig', [
             'user_decks' => $userDecks,
             'grouped_decks' => $groupedDecks,
+        ]);
+    }
+
+
+
+    #[Route('/search/deck', name: 'app_deck_search')]
+    public function search(Request $request, DeckRepository $deckRepository): Response
+    {
+        $form = $this->createForm(DeckSearchType::class);
+        $form->handleRequest($request);
+
+        $decks = [];
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $critaire = $form->getData();
+            $decks = $deckRepository->findByCritaire($critaire);
+        }
+
+        return $this->render('deck/search.html.twig', [
+            'form' => $form->createView(),
+            'decks' => $decks,
         ]);
     }
 

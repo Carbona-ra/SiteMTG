@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+{% block title %}Recherche de deck{% endblock %}
+
+{% block body %}
+
+    <h1>Recherche de deck</h1>
+
+    {{ form_start(form) }}
+        {{ form_row(form.name) }}
+        {{ form_row(form.commanderName) }}
+        <button class="btn btn-primary">Recherche</button>
+    {{ form_end(form) }}
+
+    <h2>Résultats</h2>
+
+    <div>   
+        <ul>
+            {% for deck in decks %}
+                <li>
+                    <a href="{{ path('app_deck_show', {'id': deck.id}) }}">
+                        {{ deck.name }} - {{ deck.commanderName }}
+                    </a>
+                </li>
+            {% else %}
+                <li>Pas de deck trouvé.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock %}
