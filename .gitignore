@@ -23,3 +23,10 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+
+###> zone de stockage des fichier txt ###
+/public/fichiertxt/
+###< zone de stockage des fichier txt ###
+
+

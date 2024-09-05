@@ -20,8 +20,8 @@
   </head>
   <body class="bg-gray-100 dark:bg-gray-900 dark:text-white">
     <header>{{ include('nav.html.twig') }}</header>
-      {# FLASH MESSAGES #}
-      {% for type, messages in app.flashes(['success', 'info', 'warning', 'danger']) %}
+      {#  MESSAGES FLASH #}
+      {% for type, messages in app.flashes(['success', 'info', 'warning', 'danger', 'felicitaschtroumpf']) %}
         {% for message in messages %}
           <div 
             class="alert 

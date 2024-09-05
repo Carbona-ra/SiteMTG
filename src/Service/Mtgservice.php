@@ -6,7 +6,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class Mtgservice
 {
-    private $httpClient;
+
+    private HttpClientInterface $httpClient;
 
     public function __construct(HttpClientInterface $httpClient)
     {

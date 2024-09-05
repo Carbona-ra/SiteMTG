@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Deck Export{% endblock %}
+
+{% block body %}
+    <h1>Deck Export</h1>
+
+    {# Vérifier s'il y a des decks à afficher #}
+    {% if decks is empty %}
+        <p>No decks available.</p>
+    {% else %}
+        <h2>Decks List</h2>
+        <ul>
+            {% for deck in decks %}
+                <li>
+                    <strong>{{ deck.name }}</strong> 
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {# fichiers disponibles pour téléchargement #}
+    {% if deckFiles is empty %}
+        <p>No deck files available for download.</p>
+    {% else %}
+        <h2>Download Deck Files</h2>
+        <ul>
+            {% for fileName in deckFiles %}
+                <li>
+                    <a href="{{ path('app_download_file', { fileName: fileName }) }}" class="btn btn-primary" download>
+                        Download {{ fileName }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}
