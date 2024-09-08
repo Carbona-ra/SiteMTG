@@ -25,9 +25,9 @@ class Deck
     private ?string $commanderName = null;
 
     /**
-     * @var Collection<int, CardList>
+     * @var Collection<int, Card>
      */
-    #[ORM\OneToMany(targetEntity: CardList::class, mappedBy: 'addTo')]
+    #[ORM\OneToMany(targetEntity: Card::class, mappedBy: 'addTo')]
     private Collection $AddTo;
 
     #[ORM\ManyToOne(inversedBy: 'decks')]
@@ -88,14 +88,14 @@ class Deck
     }
 
     /**
-     * @return Collection<int, CardList>
+     * @return Collection<int, Card>
      */
     public function getAddTo(): Collection
     {
         return $this->AddTo;
     }
 
-    public function addAddTo(CardList $addTo): static
+    public function addAddTo(Card $addTo): static
     {
         if (!$this->AddTo->contains($addTo)) {
             $this->AddTo->add($addTo);
@@ -105,7 +105,7 @@ class Deck
         return $this;
     }
 
-    public function removeAddTo(CardList $addTo): static
+    public function removeAddTo(Card $addTo): static
     {
         if ($this->AddTo->removeElement($addTo)) {
             // set the owning side to null (unless already changed)

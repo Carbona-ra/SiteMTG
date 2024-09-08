@@ -28,7 +28,7 @@ class DeckType extends AbstractType
                             'image/png',
                             'image/webp',
                         ],
-                        'mimeTypesMessage' => 'Please upload a valid JPEG, WEBP or PNG image.',
+                        'mimeTypesMessage' => 'Stopler un JPEG, WEBP ou un PNG.',
                     ])
                 ],
             ]);

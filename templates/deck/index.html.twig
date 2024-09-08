@@ -7,7 +7,6 @@
 {# pour aller sur la page de recherche #}
 <a href="{{ path('app_deck_search') }}" class="btn btn-primary">Rechercher un Deck</a>
 
-
 <div class="max-w-4xl mx-auto p-6 text-gray-100 rounded-lg">
     {% if app.user %}
         <div class="flex justify-between items-center mb-6">
@@ -17,7 +16,7 @@
         <ul class="space-y-3">
             {% for deck in user_decks %}
                 <li class="p-4 bg-gray-800 rounded-lg">
-                    {% if deck.bannerExists %}
+                    {% if deck.imageName is not empty %}
                         <img src="{{ asset('uploads/deck_images/' ~ deck.imageName) }}" alt="{{ deck.name }}" class="w-full h-32 object-cover rounded-t-lg mb-4">
                     {% endif %}
                     <div class="flex justify-between items-center">
@@ -42,7 +41,7 @@
         <ul class="space-y-3">
             {% for deck in group.decks %}
                 <li class="p-4 bg-gray-800 rounded-lg">
-                    {% if deck.bannerExists %}
+                    {% if deck.imageName is not empty %}
                         <img src="{{ asset('uploads/deck_images/' ~ deck.imageName) }}" alt="{{ deck.name }}" class="w-full h-32 object-cover rounded-t-lg mb-4">
                     {% endif %}
                     <div class="flex justify-between items-center">

@@ -3,8 +3,8 @@
 {% block title %}Deck{% endblock %}
 
 {% block body %}
-<div class="min-h-screen dark:bg-neutral-800 text-white">
-    <div class="container mx-auto py-8 px-4">
+<div class="min-h-screen text-white">
+    <div class="container bg-neutral-500 mx-auto py-8 px-4">
         <h1 class="text-4xl font-bold text-red-500 mb-8">Deck</h1>
 
         <div class="flex">
@@ -79,7 +79,7 @@
         </div>
 
         <div class="mt-8">
-            <a href="{{ path('app_deck_index') }}" class="bg-red-500 text-white rounded-lg px-4 py-2 hover:bg-red-700 transition-colors">Back to list</a>
+            <a href="{{ path('homepage') }}" class="bg-red-500 text-white rounded-lg px-4 py-2 hover:bg-red-700 transition-colors">Back to list</a>
             {% if isOwner %}
                 <a href="{{ path('app_deck_edit', {'id': deck.id}) }}" class="bg-red-500 text-white rounded-lg px-4 py-2 hover:bg-red-700 transition-colors">Edit</a>
                 {{ include('deck/_delete_form.html.twig') }}
@@ -88,19 +88,21 @@
     </div>
 </div>
 
-<!-- Image container to follow the mouse -->
+<!-- Image en hover -->
 <div id="card-image-hover" class="absolute pointer-events-none hidden">
     <img id="hovered-card-image" src="" alt="Card image" class="w-60 h-auto object-cover rounded-lg shadow-lg">
 </div>
-{% if isOwner %}
+
+    
+    <!-- Script pour les hover des cartes sur leur nom -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Sélection des éléments DOM 
             const cardImageHover = document.getElementById('card-image-hover');
             const hoveredCardImage = document.getElementById('hovered-card-image');
             const cardList = document.getElementById('card-list');
-            const addCardForm = document.getElementById('add-card-form');
 
-            // Hover image functionality with event delegation
+            // Hover de l'image au niveau de la souris
             cardList.addEventListener('mouseover', function(event) {
                 const cardNameElement = event.target.closest('.card-name');
                 if (cardNameElement) {
@@ -112,6 +114,59 @@
                 }
             });
 
+            // getion déplacement de la souris
+            cardList.addEventListener('mousemove', function(event) {
+                const hoverWidth = cardImageHover.offsetWidth;
+                const hoverHeight = cardImageHover.offsetHeight;
+                const pageWidth = window.innerWidth;
+                const pageHeight = window.innerHeight;
+                let left = event.pageX + 20;
+                let top = event.pageY + 20;
+
+                if (left + hoverWidth > pageWidth) {
+                    left = event.pageX - hoverWidth - 20;
+                }
+
+                if (top + hoverHeight > pageHeight) {
+                    top = event.pageY - hoverHeight - 20;
+                }
+
+                cardImageHover.style.left = `${left}px`;
+                cardImageHover.style.top = `${top}px`;
+            });
+            
+            // cacher l'image si la souris ne survole plus les element 
+            cardList.addEventListener('mouseout', function(event) {
+                const cardNameElement = event.target.closest('.card-name');
+                if (cardNameElement) {
+                    cardImageHover.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+
+
+    {% if isOwner %}
+
+    <script>
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            const cardList = document.getElementById('card-list');
+            const addCardForm = document.getElementById('add-card-form');
+
+            // Hover des cates
+            cardList.addEventListener('mouseover', function(event) {
+                const cardNameElement = event.target.closest('.card-name');
+                if (cardNameElement) {
+                    const imageUrl = cardNameElement.dataset.cardImage;
+                    if (imageUrl) {
+                        hoveredCardImage.src = imageUrl;
+                        cardImageHover.classList.remove('hidden');
+                    }
+                }
+            });
+
+             // getion déplacement de la souris
             cardList.addEventListener('mousemove', function(event) {
                 const hoverWidth = cardImageHover.offsetWidth;
                 const hoverHeight = cardImageHover.offsetHeight;
@@ -132,20 +187,27 @@
                 cardImageHover.style.top = `${top}px`;
             });
 
+            // cacher l'image si la souris ne survole plus les element
             cardList.addEventListener('mouseout', function(event) {
                 const cardNameElement = event.target.closest('.card-name');
                 if (cardNameElement) {
                     cardImageHover.classList.add('hidden');
                 }
             });
+            // Je suis plus sûr, mais il me semble que j'ai répété le même code parce que je 
+            //n'arrivais pas à obtenir l'image des cartes ajoutées. La solution que j'ai trouvée
+            //a été de dupliquer le même code pour les cartes ajoutées. En fin de compte, quand j'écris 
+            //cela, je ne me souviens plus vraiment des détails et je n'ai pas le temps de vérifier.
+        
+           
 
-            // Add card to list
+            // Ajouter une carte
             if (addCardForm) {
                 addCardForm.addEventListener('submit', function(event) {
-                    event.preventDefault();
+                    event.preventDefault();//empécher le reload de la page a l'envoi du formulaire
                     
                     const formData = new FormData(this);
-                    
+                    //requete pour choper l'image + crée la ligne pour la carte
                     fetch('{{ path('app_card_add') }}', {
                         method: 'POST',
                         body: formData
@@ -179,14 +241,15 @@
                 });
             }
 
-            // Remove card from list
+            // enlever une carte de la liste
             cardList.addEventListener('click', function(event) {
                 if (event.target.classList.contains('remove-card-btn')) {
-                    event.preventDefault();
+                    event.preventDefault();//empécher le reload de la page a l'envoi du formulaire
 
                     const cardId = event.target.getAttribute('data-card-id');
                     const deleteUrl = `{{ path('app_card_delete', { id: 'PLACEHOLDER' }) }}`.replace('PLACEHOLDER', cardId);
 
+                    //requete a moi meme sur mon end-point pour supprimer la carte
                     fetch(deleteUrl, {
                         method: 'DELETE',
                         headers: {
@@ -197,7 +260,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'Card deleted') {
-                            event.target.closest('li').remove();
+                            event.target.closest('li').remove(); // Supprime la carte de la liste si la suppression est un succès
                         } else {
                             console.error('Error removing card:', data.error);
                         }
@@ -206,8 +269,7 @@
                 }
             });
         });
+        {% endif %}
     </script>
-{% endif %}
-
 
 {% endblock %}

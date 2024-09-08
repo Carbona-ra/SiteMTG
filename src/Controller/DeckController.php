@@ -27,53 +27,6 @@ class DeckController extends AbstractController
         $this->mtgService = $mtgService;
     }
 
-    #[Route('/', name: 'app_deck_index', methods: ['GET'])]
-        public function index(DeckRepository $deckRepository, Security $security): Response
-    {
-        
-        $user = $security->getUser();
-        
-        // Récupérer les decks de l'utilisateur connecté
-        $userDecks = $user ? $deckRepository->findBy(['Creator' => $user]) : [];
-        
-        // Récupérer tous les decks
-        $allDecks = $deckRepository->findAll();
-
-        // Initialiser le service Filesystem
-        $filesystem = new Filesystem();
-
-        // Grouper les decks par créateur et vérifier l'existence de l'image
-        $groupedDecks = [];
-        foreach ($allDecks as $deck) {
-            $creator = $deck->getCreator();
-            if (!isset($groupedDecks[$creator->getId()])) {
-                $groupedDecks[$creator->getId()] = [
-                    'creator' => $creator,
-                    'decks' => [],
-                ];
-            }
-
-            // Vérifier si le fichier de l'image de bannière existe
-            $imagePath = $this->getParameter('deck_images_directory') . '/' . $deck->getImageName();
-            $deck->bannerExists = $filesystem->exists($imagePath);
-
-            $groupedDecks[$creator->getId()]['decks'][] = $deck;
-        }
-
-        // Vérifier l'existence de l'image pour les decks de l'utilisateur connecté
-        foreach ($userDecks as $deck) {
-            $imagePath = $this->getParameter('deck_images_directory') . '/' . $deck->getImageName();
-            $deck->bannerExists = $filesystem->exists($imagePath);
-        }
-
-        return $this->render('deck/index.html.twig', [
-            'user_decks' => $userDecks,
-            'grouped_decks' => $groupedDecks,
-        ]);
-    }
-
-
-
     #[Route('/search/deck', name: 'app_deck_search')]
     public function search(Request $request, DeckRepository $deckRepository): Response
     {
@@ -103,7 +56,6 @@ class DeckController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
         
-    
         $deck = new Deck();
         $deck->setCreator($user);
         $form = $this->createForm(DeckType::class, $deck);
@@ -113,6 +65,7 @@ class DeckController extends AbstractController
             if ($form->isValid()) {
                 $imageFile = $form->get('imageFile')->getData();
     
+                //gestion de l'image si il y en a une
                 if ($imageFile) {
                     $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                     $safeFilename = $slugger->slug($originalFilename);
@@ -132,8 +85,10 @@ class DeckController extends AbstractController
     
                 $entityManager->persist($deck);
                 $entityManager->flush();
+
+                $this->addFlash('felicitaschtroumpf', 'felicitaschtroumpf !');
     
-                return $this->redirectToRoute('app_deck_index', [], Response::HTTP_SEE_OTHER);
+                return $this->redirectToRoute('homepage', [], Response::HTTP_SEE_OTHER);
             } else {
                 // Collecter les erreurs de validation
                 $errors = [];
@@ -156,8 +111,9 @@ class DeckController extends AbstractController
     #[Route('/{id}', name: 'app_deck_show', methods: ['GET'])]
     public function show(Deck $deck): Response
     {
+        // savoir si c'est le proprio du deck
         $user = $this->getUser();
-        $isOwner = ($deck->getCreator() === $user); // savoir si c'est le proprio du deck
+        $isOwner = ($deck->getCreator() === $user); 
 
         // Récupérer le nom du commander du deck
         $commanderName = $deck->getCommanderName();
@@ -195,11 +151,11 @@ public function edit(Request $request, Deck $deck, EntityManagerInterface $entit
     $form->handleRequest($request);
 
     if ($form->isSubmitted() && $form->isValid()) {
-        // Get the image file from the form
+        
         $imageFile = $form->get('imageFile')->getData();
-
+        //gestion de limage si y'en a une
         if ($imageFile) {
-            // Remove the old image if it exists
+            // on dégage lancienne siy'en a une
             if ($deck->getImageName()) {
                 $oldFilename = $deck->getImageName();
                 $oldFilepath = $this->getParameter('deck_images_directory').'/'.$oldFilename;
@@ -208,8 +164,6 @@ public function edit(Request $request, Deck $deck, EntityManagerInterface $entit
                     unlink($oldFilepath);
                 }
             }
-
-            // Process the new image file
             $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
             $safeFilename = $slugger->slug($originalFilename);
             $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
@@ -220,21 +174,20 @@ public function edit(Request $request, Deck $deck, EntityManagerInterface $entit
                     $newFilename
                 );
             } catch (FileException $e) {
-                // Handle the exception if something happens during file upload
+                // si y'a un ptit flop pendant le telechargement
                 $this->addFlash('error', 'Failed to upload the image.');
                 return $this->render('deck/edit.html.twig', [
                     'deck' => $deck,
                     'form' => $form,
                 ]);
             }
-
             $deck->setImageName($newFilename);
         }
 
         // Update the deck entity
         $entityManager->flush();
 
-        return $this->redirectToRoute('app_deck_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('homepage', [], Response::HTTP_SEE_OTHER);
     }
 
     return $this->render('deck/edit.html.twig', [
@@ -246,16 +199,16 @@ public function edit(Request $request, Deck $deck, EntityManagerInterface $entit
     public function delete(Request $request, Deck $deck, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-
+        // vérif si c'est le proprio
         if ($deck->getCreator() !== $user) {
             throw $this->createAccessDeniedException();
         }
-
+        
         if ($this->isCsrfTokenValid('delete'.$deck->getId(), $request->get('_token'))) {
             $entityManager->remove($deck);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_deck_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('homepage', [], Response::HTTP_SEE_OTHER);
     }
 }

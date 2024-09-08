@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\CardList;
+use App\Entity\Card;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,7 +13,7 @@ use App\Entity\Deck;
 use App\Service\Mtgservice;
 
 #[Route('/card')]
-class CardListController extends AbstractController
+class CardController extends AbstractController
 {
 
     private $mtgService;
@@ -37,7 +37,7 @@ class CardListController extends AbstractController
         }
 
         // Créer la carte
-        $card = new CardList();
+        $card = new Card();
         $card->setName($cardName);
         // Associer la carte au deck
         $card->setAddTo($deck);
@@ -55,10 +55,10 @@ class CardListController extends AbstractController
         ]);
     }
 
-    #[Route('/delete/{id}"', name: 'app_card_delete', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'app_card_delete', methods: ['DELETE'])]
     public function deleteCard(int $id, EntityManagerInterface $em): JsonResponse
     {
-        $card = $em->getRepository(CardList::class)->find($id);
+        $card = $em->getRepository(Card::class)->find($id);
 
         if (!$card) {
             return new JsonResponse(['status' => 'Card not found'], 404);
@@ -70,16 +70,5 @@ class CardListController extends AbstractController
         return new JsonResponse(['status' => 'Card deleted']);
     }
 
-    // test pr plustard (venant du crud auto)
-    // #[Route('/testDelete/{id}', name: 'app_card_list_crud_delete', methods: ['POST'])]
-    // public function delete(Request $request, CardList $cardList, EntityManagerInterface $entityManager): Response
-    // {
-    //     if ($this->isCsrfTokenValid('delete'.$cardList->getId(), $request->getPayload()->getString('_token'))) {
-    //         $entityManager->remove($cardList);
-    //         $entityManager->flush();
-    //     }
-
-    //     return $this->redirectToRoute('app_card_list_crud_index', [], Response::HTTP_SEE_OTHER);
-    // }
 
 }

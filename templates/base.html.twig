@@ -20,21 +20,31 @@
   </head>
   <body class="bg-gray-100 dark:bg-gray-900 dark:text-white">
     <header>{{ include('nav.html.twig') }}</header>
+
       {#  MESSAGES FLASH #}
-      {% for type, messages in app.flashes(['success', 'info', 'warning', 'danger', 'felicitaschtroumpf']) %}
+      {% for type, messages in app.flashes %}
         {% for message in messages %}
           <div 
             class="alert 
                   {% if type == 'success' %}bg-green-500{% endif %}
-                  {% if type == 'info' %}bg-blue-500{% endif %}
                   {% if type == 'warning' %}bg-yellow-500{% endif %}
                   {% if type == 'danger' %}bg-red-500{% endif %}
-                  text-white p-4 mb-4 w-full fixed left-0 mt-16" 
+                  {% if type == 'felicitaschtroumpf' %}bg-blue-500{% endif %}
+                  text-white p-4 mt-5 mb-4 w-1/4 fixed right-4 top-4 rounded-lg shadow-lg"
             role="alert">
-            {{ message }}
+            
+            <p>{{ message }}</p>
+            
+            <button onclick="this.parentElement.style.display='none'" 
+                    class="absolute top-0 right-0 mt-2 mr-2 text-white font-bold">
+              &times;
+            </button>
           </div>
         {% endfor %}
       {% endfor %}
+
+
+
     <main class="max-w-screen-xl mx-auto">
       {% block body %}
 

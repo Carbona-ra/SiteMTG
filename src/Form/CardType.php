@@ -2,14 +2,14 @@
 
 namespace App\Form;
 
-use App\Entity\CardList;
+use App\Entity\Card;
 use App\Entity\Deck;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class CardListType extends AbstractType
+class CardType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -17,7 +17,7 @@ class CardListType extends AbstractType
             ->add('name')
             ->add('addTo', EntityType::class, [
                 'class' => Deck::class,
-'choice_label' => 'id',
+                'choice_label' => 'id',
             ])
         ;
     }
@@ -25,7 +25,7 @@ class CardListType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => CardList::class,
+            'data_class' => Card::class,
         ]);
     }
 }

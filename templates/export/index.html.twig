@@ -1,15 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Deck Export{% endblock %}
+{% block title %}Exporter ses deck{% endblock %}
 
 {% block body %}
-    <h1>Deck Export</h1>
+    <h1>Exporter ses deck</h1>
 
     {# Vérifier s'il y a des decks à afficher #}
     {% if decks is empty %}
-        <p>No decks available.</p>
+        <p>pas de deck a afficher.</p>
     {% else %}
-        <h2>Decks List</h2>
+        <h2>list des decks</h2>
         <ul>
             {% for deck in decks %}
                 <li>
@@ -21,14 +21,14 @@
 
     {# fichiers disponibles pour téléchargement #}
     {% if deckFiles is empty %}
-        <p>No deck files available for download.</p>
+        <p>Pas de fichier a télécharger.</p>
     {% else %}
-        <h2>Download Deck Files</h2>
+        <h2>Fichier a télécharger</h2>
         <ul>
             {% for fileName in deckFiles %}
                 <li>
                     <a href="{{ path('app_download_file', { fileName: fileName }) }}" class="btn btn-primary" download>
-                        Download {{ fileName }}
+                        télécharger {{ fileName }}
                     </a>
                 </li>
             {% endfor %}

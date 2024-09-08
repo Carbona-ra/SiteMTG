@@ -2,7 +2,7 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\CardList;
+use App\Entity\Card;
 use App\Entity\Deck;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -13,6 +13,7 @@ class AppFixtures extends Fixture
 {
 
     private const USERS_NAMES = ["Jhon", "Benrnard", "Tony", "Ben"];
+    private const CARD_NAME = ["Agate Instigator", "Parting Gust", "Starfall Invocation"];
 
     public function __construct(
         private UserPasswordHasherInterface $hasher
@@ -25,15 +26,30 @@ class AppFixtures extends Fixture
         $userlist = [];
 
 
-        // --- ADMIN ------------------------------------------------
+        // --- ADMIN le seul qui a des vrai carte ------------------------------------------------
         $admin = new User();
         $admin
             ->setMail("admin@test.flop")
             ->setName('Adminman')
-            ->setRoles(["ROLE_ADMIN"])
+            ->setRoles(["ROLE_ADMIN"])        
             ->setPassword($this->hasher->hashPassword($admin, "admin1234"));
 
         $manager->persist($admin);
+
+        // --- ADMIN Un deck qui existe vraiment -----------------------------------------------
+        $deckAdmin = new Deck();
+        $deckAdmin->setName('Boros agro');
+        $deckAdmin->setCommanderName('Phlage, Titan of Fire\'s Fury');
+        $deckAdmin->setCreator($admin);
+        $manager->persist($deckAdmin);
+
+        // --- ADMIN Une list de carte qui existe vraiment ------------------------------------------------
+        foreach (self::CARD_NAME as $cardAdminName) {
+            $cardAdmin = new Card();                
+            $cardAdmin->setName($cardAdminName);
+            $cardAdmin->setAddTo($deckAdmin);
+            $manager->persist($cardAdmin);
+        }
 
         // --- User ----------------------------------------------
         foreach (self::USERS_NAMES as $UserName) {
@@ -52,7 +68,6 @@ class AppFixtures extends Fixture
                 $deck->setName($faker->name());
                 $deck->setCommanderName($faker->name());
                 $deck->setCreator($user);
-                $deck->setImageName($faker->name());
                 $decklist[] = $deck;
                 $manager->persist($deck);
                 $i++;
@@ -62,7 +77,7 @@ class AppFixtures extends Fixture
         foreach ($decklist as $deck) {
             $i = 0;
             while ($i != 3) {
-                $card = new CardList();                
+                $card = new Card();                
                 $card->setName($faker->name());
                 $card->setAddTo($deck);
                 $manager->persist($card);

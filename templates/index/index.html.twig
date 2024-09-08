@@ -11,8 +11,8 @@
 <div class="max-w-4xl mx-auto p-6 text-gray-100 rounded-lg">
     {% if app.user %}
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-semibold border-b-2 text-black border-red-600 pb-2">Your Decks</h2>
-            <a href="{{ path('app_deck_new') }}" class="text-green-500 hover:text-green-300">Add New Deck</a>
+            <h2 class="text-2xl font-semibold border-b-2 text-black border-red-600 pb-2">Vos decks</h2>
+            <a href="{{ path('app_deck_new') }}" class="text-green-500 hover:text-green-300">Ajouter un deck</a>
         </div>
         <ul class="space-y-3">
             {% for deck in user_decks %}
@@ -35,7 +35,7 @@
         </ul>
     {% endif %}
 
-    <h2 class="text-2xl font-semibold border-b-2 text-black border-red-600 mb-4 pb-2">All Decks</h2>
+    <h2 class="text-2xl font-semibold border-b-2 text-black border-red-600 mb-4 pb-2">Tout les decks</h2>
 
     {% for creatorId, group in grouped_decks %}
         <h3 class="text-xl font-semibold border-b-2 text-black border-red-600 mb-4 pb-2">{{ group.creator.name }}</h3>
@@ -49,14 +49,14 @@
                         <a href="{{ path('app_deck_show', {'id': deck.id}) }}" class="text-xl font-medium text-gray-100 hover:text-red-400">{{ deck.name }}</a>
                         {% if deck.creator == app.user %}
                             <div class="flex space-x-2">
-                                <a href="{{ path('app_deck_edit', {'id': deck.id}) }}" class="text-blue-500 hover:text-blue-300">Edit</a>
+                                <a href="{{ path('app_deck_edit', {'id': deck.id}) }}" class="text-blue-500 hover:text-blue-300">Editer</a>
                                 <form method="post" action="{{ path('app_deck_delete', {'id': deck.id}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ deck.id) }}">
-                                    <button class="text-red-500 hover:text-red-300" onclick="return confirm('Are you sure?');">Delete</button>
+                                    <button class="text-red-500 hover:text-red-300" onclick="return confirm('Are you sure?');">Supprimer</button>
                                 </form>
                             </div>
                         {% else %}
-                            <a href="{{ path('app_deck_show', {'id': deck.id}) }}" class="text-green-500 hover:text-green-300">View</a>
+                            <a href="{{ path('app_deck_show', {'id': deck.id}) }}" class="text-green-500 hover:text-green-300">Voir</a>
                         {% endif %}
                     </div>
                 </li>
