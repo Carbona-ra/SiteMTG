@@ -25,8 +25,8 @@
 ###< symfony/asset-mapper ###
 
 ###> zone de stockage des fichier txt ###
-/public/fichiertxt/
-/public/uploads/deck_images/
+/public/fichiertxt/*
+/public/uploads/deck_images/*
 ###< zone de stockage des fichier txt ###
 
 
