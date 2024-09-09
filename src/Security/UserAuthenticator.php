@@ -15,18 +15,10 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
-/**
-* @see https://symfony.com/doc/current/security/custom_authenticator.html
-*/
 class UserAuthenticator extends AbstractAuthenticator
 {
     private UrlGeneratorInterface $urlGenerator;
 
-    /**
-     * Called on every request to decide if this authenticator should be
-     * used for the request. Returning `false` will cause this authenticator
-     * to be skipped.
-     */
     public function supports(Request $request): ?bool
     {
         return $request->headers->has('X-AUTH-TOKEN');
@@ -58,9 +50,6 @@ class UserAuthenticator extends AbstractAuthenticator
     {
         $data = [
             'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-
-            // or to translate this message
-            // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
         ];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
@@ -69,5 +58,6 @@ class UserAuthenticator extends AbstractAuthenticator
     private function getUserIdentifierFromToken(string $apiToken): ?string
     {
     return 'user@example.com'; 
+
     }
 }
