@@ -24,11 +24,11 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 
-###> zone de stockage des fichier txt ###
+###> zone de stockage des fichier txt et image ###
 /public/fichiertxt/*
-!/public/fichiertxt/.gitkeep
+!fichiertxt/.gitkeep
 /public/uploads/deck_images/*
-!/public/uploads/deck_images/.gitkeep
+!deck_images/.gitkeep
 ###< zone de stockage des fichier txt ###
 
 
