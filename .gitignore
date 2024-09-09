@@ -28,7 +28,7 @@
 /public/fichiertxt/*
 !fichiertxt/.gitkeep
 /public/uploads/deck_images/*
-!deck_images/.gitkeep
+!deck_images.gitkeep
 ###< zone de stockage des fichier txt ###
 
 
