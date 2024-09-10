@@ -27,7 +27,7 @@ class Deck
     /**
      * @var Collection<int, Card>
      */
-    #[ORM\OneToMany(targetEntity: Card::class, mappedBy: 'addTo')]
+    #[ORM\OneToMany(targetEntity: Card::class, cascade: ['remove'], mappedBy: 'addTo', orphanRemoval: true)]
     private Collection $AddTo;
 
     #[ORM\ManyToOne(inversedBy: 'decks')]

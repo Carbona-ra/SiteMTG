@@ -184,7 +184,7 @@ public function edit(Request $request, Deck $deck, EntityManagerInterface $entit
             $deck->setImageName($newFilename);
         }
 
-        // Update the deck entity
+        
         $entityManager->flush();
 
         return $this->redirectToRoute('homepage', [], Response::HTTP_SEE_OTHER);
